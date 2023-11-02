@@ -1,8 +1,20 @@
 import sys
 import bdd_constants
 import psycopg2
-import models
+import app.models
 import psycopg2.extras
+import app.routers
+from app.routers.bdd_connection import app, Chemical, chemicals
+
+
+# @app.get("/")
+# def index() -> str:
+#     return "toto"
+
+
+@app.get('/')
+async def root():
+    return "this is the initial root"
 
 
 def print_hi(name):
@@ -20,7 +32,9 @@ def main():
     print("main function end")
 
 
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
 
 if __name__ == '__main__':
     print_hi('PyCharm')
