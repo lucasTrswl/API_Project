@@ -74,7 +74,7 @@ ALTER TABLE IF EXISTS public.elements_chimiques
 
 CREATE TABLE IF NOT EXISTS public.engrais
 (
-    id_engrais uuid NOT NULL,
+    id_engrais uuid NOT NULL DEFAULT uuid_generate_v4(),
     un character varying(20) COLLATE pg_catalog."default" NOT NULL,
     nom_engrais character varying(20) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT engrais_pkey PRIMARY KEY (id_engrais),
@@ -118,7 +118,7 @@ ALTER TABLE IF EXISTS public.production
 
 CREATE TABLE IF NOT EXISTS public.posseder
 (
-    id_engrais uuid NOT NULL,
+    id_engrais uuid NOT NULL DEFAULT uuid_generate_v4(),
     code_element character varying(5) COLLATE pg_catalog."default" NOT NULL,
     valeur character varying(20) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT posseder_pkey PRIMARY KEY (id_engrais),
@@ -145,7 +145,7 @@ ALTER TABLE IF EXISTS public.posseder
 
 CREATE TABLE IF NOT EXISTS public.epandre
 (
-    id_engrais uuid NOT NULL,
+    id_engrais uuid NOT NULL DEFAULT uuid_generate_v4(),
     no_parcelle smallint NOT NULL,
     date date NOT NULL,
     qte_epandue numeric(50,0) NOT NULL,
