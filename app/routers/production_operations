@@ -1,0 +1,89 @@
+import psycopg2
+from fastapi import HTTPException
+from psycopg2.extras import DictCursor, DictRow
+
+from app.models.production import Production, ProductionPatch
+from pydantic import BaseModel
+
+
+def select_all(cur: DictCursor) -> list[DictRow]:
+    print("hello world")
+    cur.execute("SELECT * FROM elements_chimiques")
+    resources = cur.fetchall()
+    if len(resources) == 0:
+        raise HTTPException(status_code=404, detail="no resource founded for this key")
+    for resource in resources:
+        print(resource)
+    return resources
+
+
+def select_one(cur: DictCursor, production_id: str) -> DictRow:
+    cur.execute("SELECT * FROM production Where code_production = %s", (production_id,))
+    resource = cur.fetchall()
+    if len(resource) == 0:
+        raise HTTPException(status_code=404, detail="no resource founded for this key")
+    return resource[0]
+
+
+def put(cur: DictCursor, production: Production, production_id: str):
+    # Check if the resource exist in the base before trying to modify it.
+    cur.execute("SELECT * FROM production Where code_production = %s", (production_id,))
+    resource = cur.fetchall()
+    if len(resource) == 0:
+        raise HTTPException(status_code=404, detail="no resource founded for this key")
+
+    update_script = ('UPDATE production '
+                     'SET un = %s, '
+                     'nom_production = %s'
+                     'where code_production = %s')
+    cur.execute(update_script, (production.un, production.code_production, production_id))
+
+
+def patch(cur: DictCursor, production_patch: ProductionPatch, production_id: str):
+    # Check if the resource exist in the base before trying to modify it.
+    cur.execute("SELECT * FROM production Where code_production = %s", (production_id,))
+    resource = cur.fetchall()
+    if len(resource) == 0:
+        raise HTTPException(status_code=404, detail="no resource founded for this key")
+
+    # If the field un is defined in the patch deserialized, override the value of the database's element.
+    if production_patch.un is not None:
+        cur.execute('UPDATE production '
+                    'SET un = %s '
+                    'where code_production = %s',
+                    (production_patch.un, production_id))
+
+    # If the field libelle is defined in the patch deserialized, override the value of the database's element.
+    if production_patch.nom_production is not None:
+        cur.execute('UPDATE production '
+                    'SET nom_production = %s '
+                    'where code_production = %s',
+                    (production_patch.nom_production, production_id))
+
+
+def post(cur: DictCursor, production: Production):
+    # Check if a resource already exist in the base for this key.
+    cur.execute("SELECT * FROM production Where code_production = %s", (production.code_production,))
+    resource = cur.fetchall()
+    if len(resource) != 0:
+        raise HTTPException(status_code=409, detail="A resource already exist for this key")
+
+    cur.execute("INSERT INTO production(code_production, un, nom_production) " "VALUES (%s, %s, %s)",
+                (production.code_production, production.un, production.nom_production,))
+
+    # placeholder to fill database for test
+    # cur2.execute("INSERT INTO elements_chimiques VALUES('N', 'mole', 'Azote')")
+    # cur2.execute("INSERT INTO elements_chimiques VALUES('P', 'mole', 'Phosphore')")
+    # cur2.execute("INSERT INTO elements_chimiques VALUES('Na', 'mole', 'Sodium')")
+    # cur2.execute("INSERT INTO elements_chimiques VALUES('N_m', 'milligram', 'Azote')")
+
+
+def delete(cur: DictCursor, production_id: str):
+    # Check if the resource exist in the base before trying to modify it.
+    cur.execute("SELECT * FROM production Where code_production = %s", (production_id,))
+    resource = cur.fetchall()
+    if len(resource) == 0:
+        raise HTTPException(status_code=404, detail="no resource founded for this key")
+
+    delete_script = 'DELETE FROM production WHERE code_production = %s'
+    cur.execute(delete_script, production_id)
