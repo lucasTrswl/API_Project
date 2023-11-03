@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-import uuid
+
 
 class Engrais(BaseModel):
     """
@@ -9,24 +9,22 @@ class Engrais(BaseModel):
 
        Attributes
        ----------
-       id_engrais : int
+       id_engrais : str
            Unique identifier of the fertilizer id.
 
             
        un : str
            unity of the fertilizer
 
-       nom_engrais : str
+       nom : str
            name of the fertilizer.
        """
-    id_engrais: uuid
+    id_engrais: str = None
     un: str
-    nom_engrais: str
+    nom: str
 
 
 class EngraisPatch(BaseModel):
     
     un: str = None
-    nom_engrais: str = None
-
-
+    nom: str = None
