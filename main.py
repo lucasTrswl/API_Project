@@ -40,7 +40,7 @@ async def root():
 
 
 # Unite endpoints.
-@app.post('/1.0/unite')
+@app.post('/1.0/unite', tags=['unite'])
 async def create_unite(unite: Unite):
     # cur2.execute("INSERT INTO unite VALUES('V')")
 
@@ -58,7 +58,7 @@ async def create_unite(unite: Unite):
 
 
 # Chemical endpoints
-@app.get('/1.0/chemicals')
+@app.get('/1.0/chemicals', tags=['chemical'])
 async def get_chemicals():
     """
     Get a collection of all resources contained in the "elements_chimiques" database's table
@@ -86,7 +86,7 @@ async def get_chemicals():
         return results
 
 
-@app.get('/1.0/chemicalsFiltered')
+@app.get('/1.0/chemicalsFiltered', tags=['chemical'])
 async def get_chemicals_filtered(un: str = 'ANY', limit: int = 1000, offset: int = 0, order: str = 'DESC'):
     """
     Get a collection of resources contained in the "elements_chimiques" database's table filtered with query parameters.
@@ -125,7 +125,7 @@ async def get_chemicals_filtered(un: str = 'ANY', limit: int = 1000, offset: int
         return results
 
 
-@app.get('/1.0/chemicals/{chemical_id}')
+@app.get('/1.0/chemicals/{chemical_id}', tags=['chemical'])
 async def get_one_chemical(chemical_id: str):
     """
     Get a unique resources contained in the "elements_chimiques" database's table.
@@ -157,7 +157,7 @@ async def get_one_chemical(chemical_id: str):
         return results
 
 
-@app.post('/1.0/chemical/')
+@app.post('/1.0/chemical/', tags=['chemical'])
 async def create_chemical(chemical: Chemical):
     """
     Add a new resource in the "elements_chimiques" database's table.
@@ -188,7 +188,7 @@ async def create_chemical(chemical: Chemical):
         return results
 
 
-@app.put('/1.0/chemical/{chemical_id}')
+@app.put('/1.0/chemical/{chemical_id}', tags=['chemical'])
 async def put_chemical(chemical_id: str, chemical: Chemical):
     """
     Override an existing resource in the "elements_chimiques" database's table.
@@ -220,7 +220,7 @@ async def put_chemical(chemical_id: str, chemical: Chemical):
         return results
 
 
-@app.patch('/1.0/chemical/{chemical_id}')
+@app.patch('/1.0/chemical/{chemical_id}', tags=['chemical'])
 async def patch_chemical(chemical_id: str, chemical_patch: ChemicalPatch):
     """
     Partial Override an existing resource in the "elements_chimiques" database's table by updating fields.
@@ -253,7 +253,7 @@ async def patch_chemical(chemical_id: str, chemical_patch: ChemicalPatch):
         return results
 
 
-@app.delete('/1.0/chemical/{chemical_id}')
+@app.delete('/1.0/chemical/{chemical_id}', tags=['chemical'])
 async def delete_chemical(chemical_id: str):
     """
     Delete an existing resource in the "elements_chimiques" database's table.
@@ -286,7 +286,7 @@ async def delete_chemical(chemical_id: str):
 
 
 #Engrais enpoint
-@app.get('/1.0/engrais')
+@app.get('/1.0/engrais', tags=['engrais'])
 async def get_engrais():
     """
     Get a collection of all resources contained in the "engrais" database's table
@@ -314,7 +314,7 @@ async def get_engrais():
         return results
 
 
-@app.get('/1.0/engraisFiltered')
+@app.get('/1.0/engraisFiltered', tags=['engrais'])
 async def get_engrais_filtered(un: str = 'ANY', limit: int = 1000, offset: int = 0, order: str = 'DESC'):
     """
     Get a collection of resources contained in the "engrais" database's table filtered with query parameters.
@@ -353,7 +353,7 @@ async def get_engrais_filtered(un: str = 'ANY', limit: int = 1000, offset: int =
         return results
 
 
-@app.get('/1.0/engrais/{engrais_id}')
+@app.get('/1.0/engrais/{engrais_id}', tags=['engrais'])
 async def get_one_engrais(engrais_id: str):
     """
     Get a unique resources contained in the "engrais" database's table.
@@ -385,7 +385,7 @@ async def get_one_engrais(engrais_id: str):
         return results
 
 
-@app.post('/1.0/engrais/')
+@app.post('/1.0/engrais/', tags=['engrais'])
 async def create_engrais(engrais: Engrais):
     """
     Add a new resource in the "engrais" database's table.
@@ -416,7 +416,7 @@ async def create_engrais(engrais: Engrais):
         return results
 
 
-@app.put('/1.0/engrais/{engrais_id}')
+@app.put('/1.0/engrais/{engrais_id}', tags=['engrais'])
 async def put_engrais(engrais_id: str, engrais: Engrais):
     """
     Override an existing resource in the "engrais" database's table.
@@ -448,7 +448,7 @@ async def put_engrais(engrais_id: str, engrais: Engrais):
         return results
 
 
-@app.patch('/1.0/engrais/{engrais_id}')
+@app.patch('/1.0/engrais/{engrais_id}', tags=['engrais'])
 async def patch_engrais(engrais_id: str, engrais_patch: EngraisPatch):
     """
     Partial Override an existing resource in the "engrais" database's table by updating fields.
@@ -481,7 +481,7 @@ async def patch_engrais(engrais_id: str, engrais_patch: EngraisPatch):
         return results
 
 
-@app.delete('/1.0/engrais/{engrais_id}')
+@app.delete('/1.0/engrais/{engrais_id}', tags=['engrais'])
 async def delete_engrais(engrais_id: str):
     """
     Delete an existing resource in the "engrais" database's table.
