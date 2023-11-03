@@ -2,6 +2,7 @@ import sys
 from typing import Dict
 
 from fastapi import FastAPI
+from app.models.production import Production, ProductionPatch
 import bdd_constants
 import psycopg2
 import app.models
@@ -12,7 +13,7 @@ from app.models.unite import Unite
 from app.models.engrais import Engrais, EngraisPatch
 # import app.routers.crud_chemical
 from app.routers.bdd_connection import app
-from app.routers import chemical_operations, unite_operations, engrais_operations
+from app.routers import chemical_operations, unite_operations, engrais_operations, production_operations
 from app.routers.bdd_connection import app
 from fastapi import HTTPException
 
@@ -623,6 +624,282 @@ async def delete_engrais(engrais_id: str):
 
 
 
+
+
+
+##################################################################################
+
+
+## PRODUCTION
+
+##################################################################################
+
+
+
+
+@app.get('/1.0/production')
+async def get_production():
+    """
+    Get a collection of all resources contained in the "production" database's table
+    :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
+    """
+    try:
+        resources = production_operations.select_all(cur2)
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "get-production",
+            "resource_name": "production",
+            "status_code": 200,
+            "data": resources
+        }
+        return results
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.get('/1.0/productionFiltered')
+async def get_production_filtered(un: str = 'ANY', limit: int = 1000, offset: int = 0, order: str = 'DESC'):
+    """
+    Get a collection of resources contained in the "production" database's table filtered with query parameters.
+    :param un: Unite type for which the element is defined.
+    :param limit: Maximum number of element recovered in the database.
+    :param offset: Value of the starting offset from which we start recovering resources.
+    :param order: name of the field to use for alphabetical sorting of the resources.
+    :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
+    """
+    try:
+        select_script = ("SELECT * FROM production "
+                         "WHERE un = %s "
+                         "LIMIT %s "
+                         "OFFSET %s")
+        cur2.execute(select_script, (un, limit, offset))
+        resources = cur2.fetchall()
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "patch-production",
+            "resource_name": "production",
+            "status_code": 200,
+            "data": resources
+        }
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.get('/1.0/production/{production_id}')
+async def get_one_production(production_id: str):
+    """
+    Get a unique resources contained in the "production" database's table.
+    :param production_id: the unique identifier of the resource requested. (primary key of the table.)
+    :return: A datastructure containing meta-datas based on the endpoint and the resource specified.
+    """
+
+    try:
+        resource = production_operations.select_one(cur2, production_id)
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "get-one-production",
+            "resource_name": "production",
+            "status_code": 200,
+            "data": resource
+        }
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-one-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.post('/1.0/production/')
+async def create_production(production: Production):
+    """
+    Add a new resource in the "production" database's table.
+    :param production: A datastructure representing one resource deserialized from the request body.
+    :return: A datastructure containing meta-datas based on the endpoint.
+    """
+
+    try:
+        production_operations.post(cur2, production)
+
+        results = {
+            "version": 1.0,
+            "request": "create-production",
+            "status_code": 200,
+            "data": production
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "create-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.put('/1.0/production/{production_id}')
+async def put_production(production_id: str, production: Production):
+    """
+    Override an existing resource in the "production" database's table.
+    :param production_id: The unique identifier of the resource to update. (primary key of the table.)
+    :param production: A datastructure representing one resource deserialized from the request body.
+    :return: A datastructure containing meta-datas based on the endpoint.
+    """
+    try:
+        production_operations.put(cur2, production, production_id)
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "put-production",
+            "resource_name": "production",
+            "status_code": 200,
+            "data": production
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "put-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.patch('/1.0/production/{production_id}')
+async def patch_production(production_id: str, production_patch: ProductionPatch):
+    """
+    Partial Override an existing resource in the "production" database's table by updating fields.
+    :param production_id: The unique identifier of the resource to update. (primary key of the table.)
+    :param production_patch: A datastructure representing the properties to override deserialized from the request body.
+    :return: A datastructure containing meta-datas based on the endpoint.
+    """
+    try:
+        production_operations.patch(cur2, production_patch, production_id)
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "patch-production",
+            "resource_name": "production",
+            "status_code": 200,
+            "data": production_patch
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "patch-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.delete('/1.0/production/{production_id}')
+async def delete_production(production_id: str):
+    """
+    Delete an existing resource in the "elements_chimiques" database's table.
+    :param production_id: the unique identifier of the resource to delete. (primary key of the table.)
+    :return: A datastructure containing meta-datas based on the endpoint.
+    """
+    try:
+        production_operations.delete(cur2, production_id)
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "delete-production",
+            "resource_name": "production",
+            "status_code": 200,
+            "data": "Deletion was done with success."
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "delete-production",
+            "resource_name": "production",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Press the green button in the gutter to run the script.
 def main():
     print("main function call")
@@ -630,6 +907,8 @@ def main():
 
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+
 
 
 if __name__ == '__main__':
