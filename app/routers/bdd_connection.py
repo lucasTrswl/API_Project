@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 conn = psycopg2.connect(
-    dbname="popo",
+    dbname="posepython",
     user="postgres",
     password="postgres",
 )
