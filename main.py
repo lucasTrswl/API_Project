@@ -59,21 +59,20 @@ async def get_chemicals():
     Get a collection of all resources contained in the "elements_chimiques" database's table
     :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
     """
-    cur2.execute("SELECT * FROM elements_chimiques")
-
+    resources = chemical_operations.select_all(cur2)
     # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
     results = {
         "version": 1.0,
         "request": "patch-chemical",
         "resource_name": "chemical",
         "status_code": 200,
-        "data": cur2.fetchall()
+        "data": resources
     }
     return results
 
 
 @app.get('/1.0/chemicalsFiltered')
-async def get_chemicals_filtered(un: str = 'ANY', limit: int = 0, offset: int = 0, order: str = 'DESC'):
+async def get_chemicals_filtered(un: str = 'ANY', limit: int = 1000, offset: int = 0, order: str = 'DESC'):
     """
     Get a collection of resources contained in the "elements_chimiques" database's table filtered with query parameters.
     :param un: Unite type for which the element is defined.
@@ -107,8 +106,7 @@ async def get_one_chemical(chemical_id: str):
     :param chemical_id: the unique identifier of the resource requested. (primary key of the table.)
     :return: A datastructure containing meta-datas based on the endpoint and the resource specified.
     """
-    cur2.execute("SELECT * FROM elements_chimiques")
-    resources = cur2.fetchall()
+    resource = chemical_operations.select_one(cur2, chemical_id)
 
     # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
     results = {
@@ -116,7 +114,7 @@ async def get_one_chemical(chemical_id: str):
         "request": "patch-chemical",
         "resource_name": "chemical",
         "status_code": 200,
-        "data": resources
+        "data": resource
     }
     return results
 
@@ -128,29 +126,7 @@ async def create_chemical(chemical: Chemical):
     :param chemical: A datastructure representing one resource deserialized from the request body.
     :return: A datastructure containing meta-datas based on the endpoint.
     """
-    # chem.toto(cur2)
-    # chem.create(cur2, chemical)
-
-    # cur2.execute("INSERT INTO elements_chimiques(code_element, un, libelle_element) " "VALUES (%s, %s, $s)",
-    #            (chemical.code_element, chemical.un, chemical.libelle)
-    #            )
-
-    # cur2.execute("INSERT INTO elements_chimiques(code_element, un, libelle_element) " "VALUES (%s, %s, $s)",
-    #             ("toto", "toto", "toto")
-    #             )
-
-    # cur2.execute("INSERT INTO elements_chimiques VALUES('V', 'V', 'toto')")
-
-    # cur2.execute("INSERT INTO elements_chimiques(code_element, un, libelle_element) " "VALUES (%s, %s, $s)",
-    #             (chemical.code_element, chemical.un, chemical.libelle,))
-
-    # cur2.execute("INSERT INTO elements_chimiques VALUES(%s, %s, $s)",
-    #             (chemical.code_element, chemical.un, chemical.libelle))
-
-    cur2.execute("INSERT INTO elements_chimiques VALUES('N', 'mole', 'Azote')")
-    cur2.execute("INSERT INTO elements_chimiques VALUES('P', 'mole', 'Phosphore')")
-    cur2.execute("INSERT INTO elements_chimiques VALUES('Na', 'mole', 'Sodium')")
-    cur2.execute("INSERT INTO elements_chimiques VALUES('N_m', 'milligram', 'Azote')")
+    chemical_operations.post(cur2, chemical)
 
     results = {
         "version": 1.0,
@@ -170,11 +146,7 @@ async def put_chemical(chemical_id: str, chemical: Chemical):
     :param chemical: A datastructure representing one resource deserialized from the request body.
     :return: A datastructure containing meta-datas based on the endpoint.
     """
-    update_script = ('UPDATE elements_chimiques '
-                     'SET un = %s, '
-                     'libelle_element = %s'
-                     'where code_element = %s')
-    cur2.execute(update_script, (chemical.un, chemical.libelle, chemical_id))
+    chemical_operations.put(cur2, chemical, chemical_id)
 
     # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
     results = {
@@ -197,19 +169,7 @@ async def patch_chemical(chemical_id: str, chemical_patch: ChemicalPatch):
     :return: A datastructure containing meta-datas based on the endpoint.
     """
 
-    # If the field un is defined in the patch deserialized, override the value of the database's element.
-    if chemical_patch.un is not None:
-        cur2.execute('UPDATE elements_chimiques '
-                     'SET un = %s '
-                     'where code_element = %s',
-                     (chemical_patch.un, chemical_id))
-
-    # If the field libelle is defined in the patch deserialized, override the value of the database's element.
-    if chemical_patch.libelle is not None:
-        cur2.execute('UPDATE elements_chimiques '
-                     'SET libelle_element = %s '
-                     'where code_element = %s',
-                     (chemical_patch.libelle, chemical_id))
+    chemical_operations.patch(cur2, chemical_patch, chemical_id)
 
     # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
     results = {
@@ -230,8 +190,7 @@ async def delete_chemical(chemical_id: str):
     :param chemical_id: the unique identifier of the resource to delete. (primary key of the table.)
     :return: A datastructure containing meta-datas based on the endpoint.
     """
-    delete_script = 'DELETE FROM elements_chimiques WHERE code_element = %s'
-    cur2.execute(delete_script, chemical_id)
+    chemical_operations.delete(cur2, chemical_id)
 
     # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
     results = {
