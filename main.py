@@ -12,6 +12,8 @@ from app.models.unite import Unite
 # import app.routers.crud_chemical
 from app.routers import chemical_operations
 from app.routers.bdd_connection import app, Chemical, chemicals
+from fastapi import HTTPException
+
 
 conn2 = psycopg2.connect(
     dbname="popo",
@@ -45,6 +47,7 @@ async def create_unite(unite: Unite):
     results = {
         "version": 1.0,
         "request": "create-unite",
+        "resource_name": "unite",
         "status_code": 200,
         "data": unite
     }
@@ -59,16 +62,26 @@ async def get_chemicals():
     Get a collection of all resources contained in the "elements_chimiques" database's table
     :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
     """
-    resources = chemical_operations.select_all(cur2)
-    # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
-    results = {
-        "version": 1.0,
-        "request": "patch-chemical",
-        "resource_name": "chemical",
-        "status_code": 200,
-        "data": resources
-    }
-    return results
+    try:
+        resources = chemical_operations.select_all(cur2)
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "get-chemicals",
+            "resource_name": "chemical",
+            "status_code": 200,
+            "data": resources
+        }
+        return results
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-chemicals",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 @app.get('/1.0/chemicalsFiltered')
@@ -81,22 +94,33 @@ async def get_chemicals_filtered(un: str = 'ANY', limit: int = 1000, offset: int
     :param order: name of the field to use for alphabetical sorting of the resources.
     :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
     """
-    select_script = ("SELECT * FROM elements_chimiques "
-                     "WHERE un = %s "
-                     "LIMIT %s "
-                     "OFFSET %s")
-    cur2.execute(select_script, (un, limit, offset))
-    resources = cur2.fetchall()
+    try:
+        select_script = ("SELECT * FROM elements_chimiques "
+                         "WHERE un = %s "
+                         "LIMIT %s "
+                         "OFFSET %s")
+        cur2.execute(select_script, (un, limit, offset))
+        resources = cur2.fetchall()
 
-    # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
-    results = {
-        "version": 1.0,
-        "request": "patch-chemical",
-        "resource_name": "chemical",
-        "status_code": 200,
-        "data": resources
-    }
-    return results
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "patch-chemical",
+            "resource_name": "chemical",
+            "status_code": 200,
+            "data": resources
+        }
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-chemicals",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 @app.get('/1.0/chemicals/{chemical_id}')
@@ -106,17 +130,29 @@ async def get_one_chemical(chemical_id: str):
     :param chemical_id: the unique identifier of the resource requested. (primary key of the table.)
     :return: A datastructure containing meta-datas based on the endpoint and the resource specified.
     """
-    resource = chemical_operations.select_one(cur2, chemical_id)
 
-    # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
-    results = {
-        "version": 1.0,
-        "request": "patch-chemical",
-        "resource_name": "chemical",
-        "status_code": 200,
-        "data": resource
-    }
-    return results
+    try:
+        resource = chemical_operations.select_one(cur2, chemical_id)
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "get-one-chemical",
+            "resource_name": "chemical",
+            "status_code": 200,
+            "data": resource
+        }
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-one-chemical",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 @app.post('/1.0/chemical/')
@@ -126,16 +162,28 @@ async def create_chemical(chemical: Chemical):
     :param chemical: A datastructure representing one resource deserialized from the request body.
     :return: A datastructure containing meta-datas based on the endpoint.
     """
-    chemical_operations.post(cur2, chemical)
 
-    results = {
-        "version": 1.0,
-        "request": "create-chemical",
-        "status_code": 200,
-        "data": chemical
-    }
-    conn2.commit()
-    return results
+    try:
+        chemical_operations.post(cur2, chemical)
+
+        results = {
+            "version": 1.0,
+            "request": "create-chemical",
+            "status_code": 200,
+            "data": chemical
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "create-chemical",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 @app.put('/1.0/chemical/{chemical_id}')
@@ -146,18 +194,28 @@ async def put_chemical(chemical_id: str, chemical: Chemical):
     :param chemical: A datastructure representing one resource deserialized from the request body.
     :return: A datastructure containing meta-datas based on the endpoint.
     """
-    chemical_operations.put(cur2, chemical, chemical_id)
+    try:
+        chemical_operations.put(cur2, chemical, chemical_id)
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "put-chemical",
+            "resource_name": "chemical",
+            "status_code": 200,
+            "data": chemical
+        }
+        conn2.commit()
+        return results
 
-    # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
-    results = {
-        "version": 1.0,
-        "request": "patch-chemical",
-        "resource_name": "chemical",
-        "status_code": 200,
-        "data": chemical
-    }
-    conn2.commit()
-    return results
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "put-chemical",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 @app.patch('/1.0/chemical/{chemical_id}')
@@ -168,19 +226,29 @@ async def patch_chemical(chemical_id: str, chemical_patch: ChemicalPatch):
     :param chemical_patch: A datastructure representing the properties to override deserialized from the request body.
     :return: A datastructure containing meta-datas based on the endpoint.
     """
+    try:
+        chemical_operations.patch(cur2, chemical_patch, chemical_id)
 
-    chemical_operations.patch(cur2, chemical_patch, chemical_id)
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "patch-chemical",
+            "resource_name": "chemical",
+            "status_code": 200,
+            "data": chemical_patch
+        }
+        conn2.commit()
+        return results
 
-    # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
-    results = {
-        "version": 1.0,
-        "request": "patch-chemical",
-        "resource_name": "chemical",
-        "status_code": 200,
-        "data": chemical_patch
-    }
-    conn2.commit()
-    return results
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "patch-chemical",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 @app.delete('/1.0/chemical/{chemical_id}')
@@ -190,18 +258,29 @@ async def delete_chemical(chemical_id: str):
     :param chemical_id: the unique identifier of the resource to delete. (primary key of the table.)
     :return: A datastructure containing meta-datas based on the endpoint.
     """
-    chemical_operations.delete(cur2, chemical_id)
+    try:
+        chemical_operations.delete(cur2, chemical_id)
 
-    # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
-    results = {
-        "version": 1.0,
-        "request": "delete-chemical",
-        "resource_name": "chemical",
-        "status_code": 200,
-        "data": "Deletion was done with success."
-    }
-    conn2.commit()
-    return results
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "delete-chemical",
+            "resource_name": "chemical",
+            "status_code": 200,
+            "data": "Deletion was done with success."
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "delete-chemical",
+            "resource_name": "chemical",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 # Press the green button in the gutter to run the script.
