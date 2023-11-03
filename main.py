@@ -7,11 +7,11 @@ import psycopg2
 import app.models
 import psycopg2.extras
 import app.routers
-from app.models.chemical import ChemicalPatch
+from app.models.chemical import ChemicalPatch, Chemical
 from app.models.unite import Unite
 # import app.routers.crud_chemical
 from app.routers import chemical_operations, unite_operations
-from app.routers.bdd_connection import app, Chemical, chemicals
+from app.routers.bdd_connection import app
 from fastapi import HTTPException
 
 conn2 = psycopg2.connect(

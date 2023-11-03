@@ -42,7 +42,7 @@ def delete(cur: DictCursor, unite_id: str):
         raise HTTPException(status_code=404, detail="no resource founded for this key")
 
     delete_script = 'DELETE FROM unite WHERE un = %s'
-    cur.execute(delete_script, unite_id)
+    cur.execute(delete_script, (unite_id,))
 
 
 
