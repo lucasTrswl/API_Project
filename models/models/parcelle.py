@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class Parcelle(BaseModel):
     """
-       A class to represent parcelle.
+       A class to represent plot.
 
        ...
 
@@ -12,11 +12,11 @@ class Parcelle(BaseModel):
        no_parcelle : int
            Unique identifier of the resource.
        surface : int
-           Unity of alculation for the surface of parcelle.
+           Unity of calculation for the surface of plot.
        nom_parcelle : str
-           name of the parcelle.
+           name of the plot.
        coordonnees : str
-           coordinates of the parcelle location
+           coordinates of the plot location
        """
     no_parcelle: int
     surface: int

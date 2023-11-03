@@ -13,7 +13,7 @@ class Production(BaseModel):
            Unique identifier of the resource.
        un : str
            Unite of measurement used for the production.
-       libelle : str
+       nom_production : str
            name of the production.
        """
     code_production: int

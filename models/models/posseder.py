@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+import uuid
 
 class Posseder(BaseModel):
     """
@@ -10,22 +10,20 @@ class Posseder(BaseModel):
 
        Attributes
        ----------
-       no_parcelle : int
-           Number of the parcelle.
-       surface : int
-           
-       libelle : str
-           name of the production.
+       id_engrais : uuid
+           Id of the fertilizer.
+       code_element : int
+           code of the element
+       valeur : str
+           value of the of the fertilizer.
        """
-    no_parcelle: int
-    surface: int
-    nom_parcelle: str
-    coordonnees: str
+    id_engrais: uuid
+    code_element: str
+    valeur: str
 
 
-class CulturePatch(BaseModel):
-    surface: int = None
-    nom_parcelle: str = None
-    coordonnees: str = None
+class PossederPatch(BaseModel):
+    code_element: str = None
+    valeur: str = None
 
 

@@ -1,30 +1,37 @@
 from pydantic import BaseModel
-
+import uuid, date
 
 class Epandre(BaseModel):
     """
-       A class to represent culture.
+       A class to represent spread.
 
        ...
 
        Attributes
        ----------
+       id_engrais : uuid
+            id of the fertilizer to spread
+
        no_parcelle : int
-           Number of the parcelle.
-       surface : int
+           Number of the plot.
+       date : date
+            date of the spread
            
-       libelle : str
-           name of the production.
+       qte_repandue : int
+           quantity spread during the operation.
        """
+    id_engrais: uuid
     no_parcelle: int
-    surface: int
-    nom_parcelle: str
-    coordonnees: str
+    date: date
+    qte_repandue: int
 
 
-class CulturePatch(BaseModel):
-    surface: int = None
-    nom_parcelle: str = None
-    coordonnees: str = None
+
+
+class EpandrePatch(BaseModel):
+     
+     no_parcelle: int = None
+     date: int = None
+     qte_repandue: int = None
 
 
