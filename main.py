@@ -10,10 +10,9 @@ import app.routers
 from app.models.chemical import ChemicalPatch
 from app.models.unite import Unite
 # import app.routers.crud_chemical
-from app.routers import chemical_operations
+from app.routers import chemical_operations, unite_operations
 from app.routers.bdd_connection import app, Chemical, chemicals
 from fastapi import HTTPException
-
 
 conn2 = psycopg2.connect(
     dbname="popo",
@@ -38,21 +37,128 @@ async def root():
 
 
 # Unite endpoints.
+@app.get('/1.0/unite/{unite_id}')
+async def get_one_unite(unite_id: str):
+    """
+    Get a unique resources contained in the "unite" database's table.
+    :param unite_id: the unique identifier of the resource requested. (primary key of the table.)
+    :return: A datastructure containing meta-datas based on the endpoint and the resource specified.
+    """
+
+    try:
+        resource = unite_operations.select_one(cur2, unite_id)
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "get-one-unite",
+            "resource_name": "unite",
+            "status_code": 200,
+            "data": resource
+        }
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-one-unite",
+            "resource_name": "unite",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.get('/1.0/unite')
+async def get_unites():
+    """
+    Get a collection of all resources contained in the "unite" database's table
+    :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
+    """
+    try:
+        resources = unite_operations.select_all(cur2)
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "get-unite",
+            "resource_name": "unite",
+            "status_code": 200,
+            "data": resources
+        }
+        return results
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "get-unite",
+            "resource_name": "unite",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
 @app.post('/1.0/unite')
 async def create_unite(unite: Unite):
-    # cur2.execute("INSERT INTO unite VALUES('V')")
+    """
+   Add a new resource in the "unite" database's table.
+   :param unite: A datastructure representing one resource deserialized from the request body.
+   :return: A datastructure containing meta-datas based on the endpoint.
+   """
 
-    cur2.execute("INSERT INTO unite(un) " "VALUES (%s)",
-                 (unite.un,))
-    results = {
-        "version": 1.0,
-        "request": "create-unite",
-        "resource_name": "unite",
-        "status_code": 200,
-        "data": unite
-    }
-    conn2.commit()
-    return results
+    try:
+        unite_operations.post(cur2, unite)
+
+        results = {
+            "version": 1.0,
+            "request": "create-unite",
+            "resource_name": "unite",
+            "status_code": 200,
+            "data": unite
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "create-unite",
+            "resource_name": "unite",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
+
+
+@app.delete('/1.0/unite/{unite_id}')
+async def delete_unite(unite_id: str):
+    """
+    Delete an existing resource in the "unite" database's table.
+    :param unite_id: the unique identifier of the resource to delete. (primary key of the table.)
+    :return: A datastructure containing meta-datas based on the endpoint.
+    """
+    try:
+        unite_operations.delete(cur2, unite_id)
+
+        # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
+        results = {
+            "version": 1.0,
+            "request": "delete-unite",
+            "resource_name": "unite",
+            "status_code": 200,
+            "data": "Deletion was done with success."
+        }
+        conn2.commit()
+        return results
+
+    except HTTPException as e:
+        results = {
+            "version": 1.0,
+            "request": "delete-unite",
+            "resource_name": "unite",
+            "status_code": e.status_code,
+            "data": e.detail
+        }
+        return results
 
 
 # Chemical endpoints
@@ -85,7 +191,7 @@ async def get_chemicals():
 
 
 @app.get('/1.0/chemicalsFiltered')
-async def get_chemicals_filtered(un: str = 'ANY', limit: int = 1000, offset: int = 0, order: str = 'DESC'):
+async def get_chemicals_filtered(un: str = '%', limit: int = 1000, offset: int = 0, order: str = 'DESC'):
     """
     Get a collection of resources contained in the "elements_chimiques" database's table filtered with query parameters.
     :param un: Unite type for which the element is defined.
@@ -95,17 +201,18 @@ async def get_chemicals_filtered(un: str = 'ANY', limit: int = 1000, offset: int
     :return: A datastructure containing meta-datas based on the endpoint and the collection of resources.
     """
     try:
-        select_script = ("SELECT * FROM elements_chimiques "
-                         "WHERE un = %s "
-                         "LIMIT %s "
-                         "OFFSET %s")
+        select_script = "SELECT * FROM elements_chimiques " + \
+                        "WHERE un LIKE %s " + \
+                        "LIMIT %s " \
+                        "OFFSET %s"
         cur2.execute(select_script, (un, limit, offset))
         resources = cur2.fetchall()
+        print(resources)
 
         # Datastructure to return containing the resource(s) and additional datas about the API's endpoint.
         results = {
             "version": 1.0,
-            "request": "patch-chemical",
+            "request": "get-chemical",
             "resource_name": "chemical",
             "status_code": 200,
             "data": resources
@@ -169,6 +276,7 @@ async def create_chemical(chemical: Chemical):
         results = {
             "version": 1.0,
             "request": "create-chemical",
+            "resource_name": "chemical",
             "status_code": 200,
             "data": chemical
         }
